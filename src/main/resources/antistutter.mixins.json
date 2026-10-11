@@ -1,0 +1,7 @@
+{
+  "required": true,
+  "package": "com.lokamc.antistutter.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "client": ["SteppedInterpolationHandlerMixin"],
+  "injectors": { "defaultRequire": 1 }
+}
