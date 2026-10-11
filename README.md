@@ -9,14 +9,20 @@ especially noticeable in PvP ([MC-311974](https://mojira.dev/MC-311974)).
 AntiStutter is a small client-side Fabric mod that puts back the 26.2 behaviour: each living entity glides linearly
 toward its latest received position over 3 ticks.
 
+## Made to pair with Loka's server fork
+
+On its own, don't expect AntiStutter to do much. It was written specifically to pair with
+[Slice](https://github.com/LokaMC/Slice/tree/26.3), Loka's fork of Paper. Slice handles the server side of this bug:
+it stops sending other players' positions off their normal 2-tick schedule. The two together are what make it work.
+
+On other servers the mod still loads and switches back to 26.2's interpolation, but it hasn't been tested there.
+
 ## Requirements
 
 - Minecraft 26.3
 - [Fabric Loader](https://fabricmc.net/use/) 0.19.5+
 - [Fabric API](https://modrinth.com/mod/fabric-api)
 - Java 25+
-
-It works on any server, including vanilla and Paper, and needs no server-side changes.
 
 ## For server and anticheat developers
 
