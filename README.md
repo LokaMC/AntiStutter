@@ -51,6 +51,10 @@ Gradle must run on JDK 25:
 
 The jar is written to `build/libs/`.
 
+## Credits
+
+- [SamB440](https://github.com/SamB440) wrote the original code snippet this mod is built on.
+
 ## License
 
 [MIT](LICENSE)
