@@ -29,15 +29,13 @@ public final class AntiStutter implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         PayloadTypeRegistry.clientboundPlay().register(AdvertisePayload.TYPE, AdvertisePayload.CODEC);
+        // Fabric fires this on the client thread. Velocity sends its channels before the login packet, so the player
+        // (and Minecraft.getConnection()) doesn't exist yet; Fabric holds the registration until the client can send.
         ServerboundPlayChannelEvents.REGISTER.register((listener, sender, client, channels) -> {
             if (!channels.contains(CHANNEL)) return;
 
-            client.execute(() -> {
-                if (client.getConnection() != listener) return;
-
-                LOGGER.info("Server opted in, using linear entity interpolation");
-                ClientPlayNetworking.registerReceiver(AdvertisePayload.TYPE, (payload, context) -> {
-                });
+            LOGGER.info("Server opted in, using linear entity interpolation");
+            ClientPlayNetworking.registerReceiver(AdvertisePayload.TYPE, (payload, context) -> {
             });
         });
     }

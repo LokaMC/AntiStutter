@@ -1,83 +1,54 @@
 # AntiStutter
 
-Reintroduce 26.2's normal entity interpolation on the [Loka](https://modrinth.com/server/loka) server.
+## The bug
 
-Minecraft 26.3 replaced the client's entity interpolation with a stepped model that replays the server's position
-history at the server's own timing. With no slack for network jitter, other players visibly stutter, which is
-especially noticeable in PvP ([MC-311974](https://mojira.dev/MC-311974)).
+Minecraft 26.3 changed how the client moves other players and mobs between position updates
+([MC-311974](https://mojira.dev/MC-311974)). Up to 26.2, the client glided each entity toward its latest position over
+3 ticks, which smoothed over small hiccups. 26.3 instead replays the server's updates step by step, at the server's
+exact timing, with no buffer. Whenever an update arrives a little late, or the server sends one off its normal
+schedule (sprinting, getting hit, jumping), other players visibly hitch. It's most noticeable in PvP.
 
-AntiStutter is a small client-side Fabric mod that puts back the 26.2 behaviour: each living entity glides linearly
-toward its latest received position over 3 ticks.
+## What the mod does
 
-## Only works on Loka
+AntiStutter puts back the 26.2 behaviour: other players and mobs glide toward their latest position over 3 ticks
+again. It's client-side only and only changes how other entities are drawn. Your own movement isn't touched.
 
-AntiStutter is built for Loka (`play.lokamc.com`) and only does anything there. It's one half of the fix. The other
-half is server-side changes in Loka's server software, which stop other players' positions being sent off their normal
-2-tick schedule, plus matching rules in Loka's anticheat.
+## Loka only
 
-The mod switches itself on only when the server tells it to. On every other server it stays off: the game behaves
-exactly as if the mod weren't installed, and the mod doesn't announce itself to the server.
+The mod is only half the fix, and it only works on [Loka](https://modrinth.com/server/loka) (`play.lokamc.com`):
 
-## Requirements
+- Loka's server software sends player positions on a steady schedule instead of firing extra updates mid-movement.
+- Our anticheat knows that players with the mod see other entities the 26.2 way.
 
-- Minecraft 26.3
-- [Fabric Loader](https://fabricmc.net/use/) 0.19.5+
-- [Fabric API](https://modrinth.com/mod/fabric-api)
-- Java 25+
-
-## For server and anticheat developers
-
-The mod is switched on by a handshake on the play channel `antistutter:linear_3`:
-
-1. The server registers the channel in `minecraft:register`. Behind Velocity, registering it with the proxy's channel
-   registrar is enough: Velocity sends its channels to the client every time the client enters play, including after
-   each server switch.
-2. The client then switches to 3-tick linear interpolation for every entity it creates from then on, and registers
-   the channel back. Velocity re-sends a client's channels to each backend on server switch.
-
-If a client has registered this channel, model its view of other living entities as the pre-26.3 3-tick linear
-interpolation (`LinearInterpolationHandler`, 3 steps) instead of 26.3's stepped interpolation. That's the same model
-older clients use when they connect through ViaVersion. If the server never registers the channel, the client stays
-on vanilla interpolation and never registers the channel.
-
-Neither side sends data on the channel, and the mod ignores anything sent to it.
-
-## How it works
-
-While the current server has registered the channel, one mixin makes `SteppedInterpolationHandler.create` return
-`LinearInterpolationHandler.create(entity, 3)` on the client. `LivingEntity` is the only caller, and nothing in the client depends on the stepped handler type.
+Other servers don't have either. Worse, their anticheat would expect 26.3's interpolation, so your hits could look
+like they're landing on positions you shouldn't be able to see. So the mod stays off unless the server switches it
+on. Loka does that when you join. On any other server it does nothing.
 
 <!-- modrinth_exclude.start -->
-Loka's server side lives in [Slice](https://github.com/LokaMC/Slice/tree/26.3), Loka's fork of Paper.
+## Install
+
+- [Fabric Loader](https://fabricmc.net/use/) 0.19.5+ for Minecraft 26.3
+- [Fabric API](https://modrinth.com/mod/fabric-api)
+- Drop AntiStutter in your `mods` folder.
+
+## For server and anticheat devs
+
+A server opts in by registering the `antistutter:linear_3` plugin channel (on Velocity, the proxy's channel registrar
+is enough). The client then switches to 26.2's 3-tick linear interpolation (`LinearInterpolationHandler`, 3 steps)
+and registers the channel back, so an anticheat can tell which clients to model that way. Nothing is ever sent on the
+channel.
 
 ## Building
 
-Gradle must run on JDK 25:
-
-```
-./gradlew build
-```
-
-The jar is written to `build/libs/`.
-
-To publish a new version to Modrinth, bump `version` in `gradle.properties`, set `MODRINTH_TOKEN` to a personal
-access token with the `CREATE_VERSION` scope, and run:
-
-```
-./gradlew modrinth
-```
-
-`./gradlew modrinthSyncBody` replaces the Modrinth description with this README (minus the excluded parts). It needs
-the `PROJECT_WRITE` scope.
+Needs JDK 25. `./gradlew build` puts the jar in `build/libs/`. To publish to Modrinth, bump `version` in
+`gradle.properties` and run `./gradlew modrinth` with `MODRINTH_TOKEN` set.
 <!-- modrinth_exclude.end -->
 
 ## Credits
 
-- [SamB440](https://github.com/SamB440) wrote the original code snippet this mod is built on.
-- Claude helped put the repository together.
+Thanks to [SamB440](https://github.com/SamB440) for the original code this is built on. Claude helped put the repo
+together.
 
 <!-- modrinth_exclude.start -->
-## License
-
 [MIT](LICENSE)
 <!-- modrinth_exclude.end -->
