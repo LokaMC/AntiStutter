@@ -3,7 +3,7 @@
   "id": "antistutter",
   "version": "${version}",
   "name": "AntiStutter",
-  "description": "Restores 26.2's linear 3-tick entity interpolation (MC-311974) and advertises it to the server so anticheats can account for it.",
+  "description": "Restores 26.2's linear 3-tick entity interpolation (MC-311974) on servers that opt in, such as Loka. Does nothing elsewhere.",
   "authors": ["Loka"],
   "contributors": [
     {

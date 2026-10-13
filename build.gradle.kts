@@ -1,5 +1,6 @@
 plugins {
     id("net.fabricmc.fabric-loom") version "1.18.4"
+    id("com.modrinth.minotaur") version "2.10.0"
 }
 
 dependencies {
@@ -27,4 +28,16 @@ tasks.processResources {
 
 tasks.jar {
     from("LICENSE")
+}
+
+modrinth {
+    projectId = "antistutter-loka"
+    uploadFile.set(tasks.jar)
+    gameVersions.add(property("minecraft_version").toString())
+    loaders.add("fabric")
+    environment = "client_only"
+    syncBodyFrom = file("README.md").readText()
+    dependencies {
+        required.project("fabric-api")
+    }
 }
